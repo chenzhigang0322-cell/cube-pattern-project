@@ -1,0 +1,233 @@
+'use client'
+
+import { usePatternStore } from '@/store/pattern-store'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Slider } from '@/components/ui/slider'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { PATTERN_CONFIGS } from '@/types/pattern'
+import { Switch } from '@/components/ui/switch'
+import { Settings, Move, RotateCw, Maximize, Palette, Layers, Eye } from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+export function ElementEditor() {
+  const { elements, selectedElementId, updateElementTransform } = usePatternStore()
+
+  const selectedElement = elements.find(el => el.id === selectedElementId)
+
+  if (!selectedElement) {
+    return (
+      <Card className="chinese-border chinese-shadow card-hover">
+        <CardHeader className="pb-3 bg-gradient-to-r from-amber-50 to-rose-50">
+          <CardTitle className="text-base flex items-center gap-2 text-amber-900">
+            <Settings className="h-4 w-4" />
+            元素编辑
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-8 text-center text-muted-foreground text-sm">
+          <div className="flex flex-col items-center gap-2">
+            <Layers className="h-8 w-8 text-amber-400" />
+            <p>请先选择一个元素进行编辑</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const patternConfig = PATTERN_CONFIGS.find(p => p.type === selectedElement.type)
+
+  return (
+    <Card className="chinese-border chinese-shadow card-hover">
+      <CardHeader className="pb-3 bg-gradient-to-r from-amber-50 to-rose-50">
+        <CardTitle className="text-base flex items-center gap-2 text-amber-900">
+          <Settings className="h-4 w-4" />
+          元素属性 - {patternConfig?.name || selectedElement.type}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4 pt-4">
+        {/* 位置 */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Move className="h-3 w-3 text-amber-600" />
+            <Label className="text-xs font-medium">位置</Label>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">X 位置</Label>
+              <Input
+                type="number"
+                value={Math.round(selectedElement.transform.x)}
+                onChange={(e) => updateElementTransform(selectedElement.id, { x: Number(e.target.value) })}
+                className="h-8 chinese-border"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Y 位置</Label>
+              <Input
+                type="number"
+                value={Math.round(selectedElement.transform.y)}
+                onChange={(e) => updateElementTransform(selectedElement.id, { y: Number(e.target.value) })}
+                className="h-8 chinese-border"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* 旋转 */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <RotateCw className="h-3 w-3 text-amber-600" />
+            <Label className="text-xs font-medium">旋转角度</Label>
+            <span className="text-xs text-muted-foreground ml-auto">{Math.round(selectedElement.transform.rotation)}°</span>
+          </div>
+          <Slider
+            value={[selectedElement.transform.rotation]}
+            onValueChange={([value]) => updateElementTransform(selectedElement.id, { rotation: value })}
+            min={0}
+            max={360}
+            step={15}
+            className="accent-amber-500"
+          />
+        </div>
+
+        {/* 缩放 */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Maximize className="h-3 w-3 text-amber-600" />
+            <Label className="text-xs font-medium">缩放比例</Label>
+            <span className="text-xs text-muted-foreground ml-auto">{selectedElement.transform.scale.toFixed(2)}x</span>
+          </div>
+          <Slider
+            value={[selectedElement.transform.scale * 100]}
+            onValueChange={([value]) => updateElementTransform(selectedElement.id, { scale: value / 100 })}
+            min={25}
+            max={300}
+            step={5}
+            className="accent-amber-500"
+          />
+        </div>
+
+        {/* 大小 */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Maximize className="h-3 w-3 text-amber-600" />
+            <Label className="text-xs font-medium">元素大小</Label>
+            <span className="text-xs text-muted-foreground ml-auto">{selectedElement.size}px</span>
+          </div>
+          <Slider
+            value={[selectedElement.size]}
+            onValueChange={([value]) => {
+              usePatternStore.setState(state => ({
+                elements: state.elements.map(el =>
+                  el.id === selectedElementId ? { ...el, size: value } : el
+                )
+              }))
+            }}
+            min={40}
+            max={200}
+            step={10}
+            className="accent-amber-500"
+          />
+        </div>
+
+        {/* 镜像 */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center justify-between p-2 bg-gradient-to-r from-amber-50 to-rose-50/50 rounded chinese-border">
+            <Label className="text-xs">水平镜像</Label>
+            <Switch
+              checked={selectedElement.transform.mirrorX}
+              onCheckedChange={(checked) => updateElementTransform(selectedElement.id, { mirrorX: checked })}
+            />
+          </div>
+          <div className="flex items-center justify-between p-2 bg-gradient-to-r from-amber-50 to-rose-50/50 rounded chinese-border">
+            <Label className="text-xs">垂直镜像</Label>
+            <Switch
+              checked={selectedElement.transform.mirrorY}
+              onCheckedChange={(checked) => updateElementTransform(selectedElement.id, { mirrorY: checked })}
+            />
+          </div>
+        </div>
+
+        {/* 颜色 */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Palette className="h-3 w-3 text-amber-600" />
+            <Label className="text-xs font-medium">颜色</Label>
+          </div>
+          <div className="flex gap-2">
+            <Input
+              type="color"
+              value={selectedElement.color}
+              onChange={(e) => {
+                usePatternStore.setState(state => ({
+                  elements: state.elements.map(el =>
+                    el.id === selectedElementId ? { ...el, color: e.target.value } : el
+                  )
+                }))
+              }}
+              className="w-12 h-8 p-1 chinese-border"
+            />
+            <Input
+              type="text"
+              value={selectedElement.color}
+              onChange={(e) => {
+                usePatternStore.setState(state => ({
+                  elements: state.elements.map(el =>
+                    el.id === selectedElementId ? { ...el, color: e.target.value } : el
+                  )
+                }))
+              }}
+              className="h-8 flex-1 chinese-border"
+            />
+          </div>
+        </div>
+
+        {/* 线宽 */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Layers className="h-3 w-3 text-amber-600" />
+            <Label className="text-xs font-medium">线条粗细</Label>
+            <span className="text-xs text-muted-foreground ml-auto">{selectedElement.strokeWidth}px</span>
+          </div>
+          <Slider
+            value={[selectedElement.strokeWidth]}
+            onValueChange={([value]) => {
+              usePatternStore.setState(state => ({
+                elements: state.elements.map(el =>
+                  el.id === selectedElementId ? { ...el, strokeWidth: value } : el
+                )
+              }))
+            }}
+            min={1}
+            max={10}
+            step={0.5}
+            className="accent-amber-500"
+          />
+        </div>
+
+        {/* 透明度 */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Eye className="h-3 w-3 text-amber-600" />
+            <Label className="text-xs font-medium">透明度</Label>
+            <span className="text-xs text-muted-foreground ml-auto">{Math.round(selectedElement.opacity * 100)}%</span>
+          </div>
+          <Slider
+            value={[selectedElement.opacity * 100]}
+            onValueChange={([value]) => {
+              usePatternStore.setState(state => ({
+                elements: state.elements.map(el =>
+                  el.id === selectedElementId ? { ...el, opacity: value / 100 } : el
+                )
+              }))
+            }}
+            min={10}
+            max={100}
+            step={5}
+            className="accent-amber-500"
+          />
+        </div>
+      </CardContent>
+    </Card>
+  )
+}

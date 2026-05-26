@@ -1,0 +1,83 @@
+/* 中式建筑风格 - 墙面背景 */
+.chinese-wall-bg {
+  background-color: #6b1a1a;
+  font-family: "STKaiti", "KaiTi", "华文楷体", serif;
+}
+
+/* 中式建筑风格 - 金色琉璃瓦屋檐 */
+.chinese-eaves {
+  position: relative;
+}
+
+.chinese-eaves::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background: linear-gradient(to bottom, #d4af37, #b8860b);
+  border-bottom: 3px solid #8b6914;
+}
+
+.chinese-eaves::after {
+  content: '';
+  position: absolute;
+  top: 28px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, transparent, transparent 20px, #b8860b 20px, #b8860b 40px);
+}
+
+/* 中式建筑风格 - 窗棂纹理 */
+.chinese-lattice {
+  position: relative;
+}
+
+.chinese-lattice::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(90deg, transparent, transparent 49px, rgba(139, 58, 58, 0.15) 49px, rgba(139, 58, 58, 0.15) 51px),
+    repeating-linear-gradient(0deg, transparent, transparent 49px, rgba(139, 58, 58, 0.15) 49px, rgba(139, 58, 58, 0.15) 51px);
+}
+
+/* 中式建筑风格 - 深色卡片 */
+.chinese-card-dark {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  backdrop-filter: blur(8px);
+}
+
+/* 中式建筑风格 - 深色卡片标题 */
+.chinese-card-header-dark {
+  background: linear-gradient(to right, rgba(245, 158, 11, 0.2), rgba(220, 38, 38, 0.2));
+  border-bottom: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* 中式建筑风格 - 浅色文字 */
+.chinese-text-light {
+  color: #f5f5dc;
+}
+
+/* 中式建筑风格 - 金色文字 */
+.chinese-text-gold {
+  color: #f5e6a3;
+}
+
+/* 中式建筑风格 - 深色背景 Banner */
+.chinese-banner-dark {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* 中式建筑风格 - 深色 Footer */
+.chinese-footer-dark {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(245, 158, 11, 0.3);
+}
