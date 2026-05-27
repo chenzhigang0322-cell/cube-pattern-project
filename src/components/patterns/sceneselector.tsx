@@ -171,6 +171,7 @@ export function SceneSelector() {
   const [mood, setMood] = useState('serene')
   const [item, setItem] = useState('lotus')
   const [itemDescription, setItemDescription] = useState<string | null>(null)
+  const [generateError, setGenerateError] = useState<string | null>(null)
 
   // 生成AI图像
   const handleGenerate = async () => {
@@ -185,6 +186,7 @@ export function SceneSelector() {
     }
 
     setIsGenerating(true)
+    setGenerateError(null)
 
     try {
       const canvas = document.querySelector('canvas')
@@ -206,9 +208,22 @@ export function SceneSelector() {
         })
       })
 
-      if (!response.ok) throw new Error('生成失败')
+      let data: { image?: string; error?: string; prompt?: string }
+      try {
+        data = await response.json()
+      } catch (parseError) {
+        console.error('响应JSON解析失败:', parseError)
+        throw new Error('AI 生成失败，服务器返回内容异常，请重试')
+      }
 
-      const data = await response.json()
+      if (!response.ok || data.error) {
+        throw new Error(data.error || '生成失败，请重试')
+      }
+
+      if (!data.image) {
+        throw new Error('未获取到生成图像，请重试')
+      }
+
       setGeneratedImage(data.image)
 
       // 获取画布上的纹样类型
@@ -218,7 +233,8 @@ export function SceneSelector() {
 
     } catch (error) {
       console.error('Generation error:', error)
-      alert(error instanceof Error ? error.message : '生成失败')
+      const msg = error instanceof Error ? error.message : 'AI 生成失败，请稍后重试'
+      setGenerateError(msg)
     } finally {
       setIsGenerating(false)
     }
@@ -375,6 +391,13 @@ export function SceneSelector() {
           </>
         )}
       </Button>
+
+      {/* 错误提示 */}
+      {generateError && (
+        <div className="text-xs text-red-400 bg-red-900/20 border border-red-700/40 rounded-md px-3 py-2">
+          {generateError}
+        </div>
+      )}
 
       {/* 物品图解读 */}
       {itemDescription && (

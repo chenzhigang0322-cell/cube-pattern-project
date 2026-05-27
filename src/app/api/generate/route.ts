@@ -156,28 +156,29 @@ export async function POST(request: NextRequest) {
     })
 
     if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(`API调用失败: ${errorData.message || response.statusText}`)
+      let errorMsg = response.statusText
+      try {
+        const errorData = await response.json()
+        errorMsg = errorData.message || errorMsg
+      } catch {}
+      throw new Error(`API调用失败: ${errorMsg}`)
     }
 
-    const data: QwenImageResponse = await response.json()
+    let data: QwenImageResponse
+    try {
+      data = await response.json()
+    } catch (e) {
+      throw new Error('API响应解析失败，请稍后重试')
+    }
     const generatedImageUrl = data.output.choices[0]?.message.content[0]?.image
 
     if (!generatedImageUrl) {
       throw new Error('生成图像失败')
     }
 
-    // 下载生成的图像并转换为base64
-    const imageResponse = await fetch(generatedImageUrl)
-    if (!imageResponse.ok) {
-      throw new Error('下载生成的图像失败')
-    }
-    const imageBuffer = await imageResponse.arrayBuffer()
-    const base64Image = Buffer.from(imageBuffer).toString('base64')
-
-    // 返回base64格式的图像
+    // 直接返回图片URL，避免base64转换导致响应体过大被边缘节点截断
     return NextResponse.json({
-      image: `data:image/png;base64,${base64Image}`,
+      image: generatedImageUrl,
       prompt: fullPrompt
     })
 
